@@ -116,11 +116,44 @@
       <DeploymentContent>true</DeploymentContent>
     </Manifest>
   </ItemGroup>
-  <ItemGroup>
+  <!--<ItemGroup>
     <ProjectReference Include="..\AuthoringDemo\AuthoringDemo.csproj">
       <Project>{7e449dc2-5334-464d-b478-1715b96c8050}</Project>
     </ProjectReference>
+  </ItemGroup>-->
+  <PropertyGroup>
+    <NativeLibraryProjectName>AuthoringDemo</NativeLibraryProjectName>
+    <NativeLibraryProjectDirectory>$(MSBuildThisFileDirectory)..\$(NativeLibraryProjectName)\</NativeLibraryProjectDirectory>
+    <NativeLibraryOutputFolder>$(OutDir)..\..\$(NativeLibraryProjectName)\obj\$(Platform)\$(Configuration)\net8.0-windows10.0.22621.0\Generated Files\cswinrt</NativeLibraryOutputFolder>
+  </PropertyGroup>
+  <Target Name="AddCppWinRTProjectWinMDReferences" AfterTargets="GetCppWinRTProjectWinMDReferences">
+    <ItemGroup>
+      <CppWinRTDynamicProjectWinMDReferences Include="$(NativeLibraryOutputFolder)\AuthoringDemo.winmd">
+        <WinMDPath>$(NativeLibraryOutputFolder)\AuthoringDemo.winmd</WinMDPath>
+      </CppWinRTDynamicProjectWinMDReferences>
+    </ItemGroup>
+  </Target>
+  <ItemGroup>
+    <NativeAotProjectReference Include="../AuthoringDemo/AuthoringDemo.csproj" />
   </ItemGroup>
+  <PropertyGroup>
+    <ComputeLinkInputsTargets>
+			$(ComputeLinkInputsTargets);
+			BuildNativeAotProject
+		</ComputeLinkInputsTargets>
+  </PropertyGroup>
+  <Target Name="BuildNativeAotProject">
+    <!--<MSBuild Projects="@(NativeAotProjectReference)"
+				 Properties="RuntimeIdentifier=win-$(Platform);NativeLib=Shared;Configuration=$(Configuration);Platform=$(Platform)"
+				 Targets="Restore" />-->
+    <MSBuild Projects="@(NativeAotProjectReference)" Properties="_IsPublishing=true;RuntimeIdentifier=win-$(Platform);NativeLib=Shared;Configuration=$(Configuration);Platform=$(Platform)" Targets="Build;Publish">
+      <Output TaskParameter="TargetOutputs" ItemName="NativeAotProjectOutputs" />
+    </MSBuild>
+    <ItemGroup>
+      <Link Include="@(NativeAotProjectOutputs->'%(RootDir)%(Directory)native\%(Filename).lib')" Condition="%(NativeAotProjectOutputs.MSBuildSourceTargetName) == 'Build'" />
+    </ItemGroup>
+    <Copy SourceFiles="@(NativeAotProjectOutputs->'%(RootDir)%(Directory)publish\%(Filename).dll')" DestinationFolder="$(OutputPath)" OverwriteReadOnlyFiles="true" />
+  </Target>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\packages\Microsoft.Windows.CppWinRT.2.0.201217.4\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\packages\Microsoft.Windows.CppWinRT.2.0.201217.4\build\native\Microsoft.Windows.CppWinRT.targets')" />

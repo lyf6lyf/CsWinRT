@@ -13,11 +13,6 @@ int main()
     init_apartment();
 
     AuthoringDemo::Example ex;
-    ex.SampleProperty(42);
-    wcout << ex.SampleProperty() << endl;
-    wcout << ex.SayHello().c_str() << endl;
-
-    AuthoringDemo::FolderEnumeration folderEnumerator;
-    folderEnumerator.GetFilesAndFoldersAsync().get();
-    wcout << folderEnumerator.AllFiles().c_str() << endl;
+    auto parent = ex.GetParent();
+    auto child = ex.GetChild();
 }

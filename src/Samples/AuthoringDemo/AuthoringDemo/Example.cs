@@ -3,13 +3,18 @@
 
 namespace AuthoringDemo
 {
+    public interface IParent {}
+
+    public interface  IChild : IParent {}
+
+    internal partial record Parent : IParent {}
+
+    internal partial record Child : Parent, IChild {}
+
     public sealed class Example
     {
-        public int SampleProperty { get; set; }
+        public static IChild GetChild() { return new Child(); }
 
-        public static string SayHello()
-        {
-            return "Hello from your C# WinRT component";
-        }
+        public static IParent GetParent() { return new Parent(); }
     }
 }
